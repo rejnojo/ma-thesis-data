@@ -1,2 +1,484 @@
 #Visualiasations of responses to each question
 
+library(tidyverse) 
+library(readr) 
+library(dplyr)
+
+setwd("C:/Users/asiar/Desktop/survey_data") 
+
+data <- read.csv("survey_data.csv") 
+data <- read_csv("survey_data.csv", locale = locale(encoding = "UTF-8")) 
+data <- read_csv( "survey_data.csv", locale = locale(encoding = "Windows-1252") ) 
+
+#packages
+library(tidyverse) 
+library(readr) 
+library(ggplot2) 
+library(dplyr)  
+library(viridis)  
+library(RColorBrewer) 
+library(stats) 
+library(psych) 
+library(corrplot) 
+library(forcats) 
+library(knitr) 
+library(tidyr) 
+library(scales) 
+library(stringr) 
+library(extrafont) 
+library(gridExtra) 
+
+#theme
+
+academic_theme <- theme_minimal() +  
+theme(  
+text = element_text(family = "Calibri", size = 12),  
+plot.title = element_text(size = 14, face = "bold", hjust = 0.5), 
+plot.subtitle = element_text(size = 12, hjust = 0.5),  # <- Center subtitle
+axis.title = element_text(size = 12),  
+legend.title = element_text(size = 11),  
+legend.text = element_text(size = 10),  
+panel.grid.minor = element_blank(),  
+panel.grid.major.x = element_blank(), 
+panel.border = element_rect(fill = NA, color = "gray80"),  
+plot.margin = margin(10, 10, 10, 10),  
+axis.text.x = element_text(family = "Calibri")
+)
+
+mono_blues <- c("#E6F0FF", "#C3D8F1", "#9EC3E6", "#7BACD9", "#5794CC", "#3480BF", "#116BB3") 
+
+#question 1
+
+age_distribution <- data %>%  
+count(age) %>%  
+rename(Age_Group = age, Count = n) 
+
+q1_plot <- ggplot(age_distribution, aes(x = Age_Group, y = Count, fill = Age_Group)) + 
+geom_bar(stat = "identity", width = 0.7) +  
+geom_text(aes(label = Count), vjust = -0.5, family = "Calibri", size = 4) + 
+scale_fill_manual(values = mono_blues[c(2, 4, 6)]) +  
+scale_y_continuous(breaks = seq(0, max(age_distribution$Count) + 2, by = 2)) +  
+labs(  
+title = "Age Distribution of Survey Respondents",  
+x = "Age Group",  
+y = "Count", 
+caption = "n = 50" 
+) +  
+academic_theme + 
+theme(legend.position = "none") 
+
+print(q1_plot) 
+
+ggsave("question1.jpeg", plot = q1_plot, width = 6.5, height = 4, units = "in", dpi = 300) 
+ggsave("question1.png", plot = q1_plot, width = 6.5, height = 4, units = "in", dpi = 300)
+
+#question 2
+
+gender_distribution <- data %>%  
+count(gender) %>%  
+rename(Gender = gender, Count = n) 
+
+q2_plot <- ggplot(gender_distribution, aes(x = Gender, y = Count, fill = Gender)) + 
+geom_bar(stat = "identity", width = 0.7) +  
+geom_text(aes(label = Count), vjust = -0.5, family = "Calibri", size = 4) + 
+scale_fill_manual(values = mono_blues[c(2, 4, 6, 8)]) +  
+scale_y_continuous(breaks = seq(0, max(gender_distribution$Count) + 2, by = 2)) +  
+labs(  
+title = "Gender Distribution of Survey Respondents",  
+x = "Gender",  
+y = "Count",  
+caption = "n = 50" ) +  
+academic_theme +  
+theme(legend.position = "none")  
+
+print(q2_plot)  
+
+ggsave("question2.jpeg", plot = q2_plot, width = 6.5, height = 4, units = "in", dpi = 300) 
+ggsave("question2.png", plot = q2_plot, width = 6.5, height = 4, units = "in", dpi = 300) 
+
+#question 3
+
+tiktok_distribution <- data %>%  
+count(tiktok_time) %>%  
+rename(TikTok_Time = tiktok_time, Count = n) 
+
+time_order <- c("Less than 30 minutes", "30 minutes to 1 hour", "1 - 2 hours", "More than 2 hours")  
+tiktok_distribution$TikTok_Time <- factor(tiktok_distribution$TikTok_Time, levels = time_order) 
+
+q3_plot <- ggplot(tiktok_distribution, aes(x = TikTok_Time, y = Count, fill = TikTok_Time)) + 
+geom_bar(stat = "identity", width = 0.7) +  
+geom_text(aes(label = Count), vjust = -0.5, family = "Calibri", size = 4) + 
+scale_fill_manual(values = mono_blues[c(2, 3, 4, 5)]) +  
+scale_y_continuous(breaks = seq(0, max(tiktok_distribution$Count) + 2, by = 2)) +  
+scale_x_discrete(labels = scales::label_wrap(10)) +
+labs(  
+title = "Daily TikTok Usage Time of Survey Respondents",  
+x = "TikTok Usage Time", 
+y = "Count", 
+caption = "n = 50" 
+) +  
+academic_theme +  
+theme(legend.position = "none")
+
+print(q3_plot)
+
+ggsave("question3.jpeg", plot = q3_plot, width = 6.5, height = 4, units = "in", dpi = 300) 
+ggsave("question3.png", plot = q3_plot, width = 6.5, height = 4, units = "in", dpi = 300) 
+
+#question 4
+
+split_multiple_choices <- function(x) { 
+if (is.na(x)) return(NA) 
+trimmed <- gsub("^;|;$", "", x) 
+return(strsplit(trimmed, ";")) 
+} 
+
+ad_recognition_data <- data.frame(method = character(), count = integer()) 
+for (response in data$ad_recognition) { 
+  if (!is.na(response)) { 
+    methods <- split_multiple_choices(response)[[1]] 
+    for (method in methods) { 
+      if (method != "") { 
+        method <- trimws(method) 
+        if (nrow(ad_recognition_data[ad_recognition_data$method == method, ]) == 0) { 
+          ad_recognition_data <- rbind(ad_recognition_data, data.frame(method = method, count = 1)) 
+        } else { 
+          ad_recognition_data[ad_recognition_data$method == method, "count"] <- 
+            ad_recognition_data[ad_recognition_data$method == method, "count"] + 1 
+        } 
+      } 
+    } 
+  } 
+} 
+
+ad_recognition_data$method <- gsub("\"Sponsored\" label", "Sponsored label", ad_recognition_data$method)  
+ad_recognition_data$method <- gsub("Unusual call-to-action \\(e.g., \"Shop now\"\\)", "Unusual call-to-action", ad_recognition_data$method) 
+
+q4_plot <- ad_recognition_data %>%  
+  ggplot(aes(x = count, y = reorder(method, count), fill = method)) + 
+  geom_bar(stat = "identity", width = 0.7) + 
+  geom_text(aes(label = count), hjust = -0.1, size = 4, family = "Calibri") + 
+  scale_fill_manual(values = rep_len(mono_blues, length(unique(ad_recognition_data$method)))) + 
+  labs(
+    title = "Recognition of Advertising Cues\non TikTok by Survey Respondents", 
+    y = "Recognition Method",  
+    x = "Number of Responses", 
+    caption = "Multiple answers allowed per respondent"
+  ) + 
+  academic_theme + 
+  theme(
+    legend.position = "none", 
+    plot.title = element_text(hjust = 0, size = 14, family = "Calibri"), 
+    plot.margin = margin(t = 30, r = 10, b = 10, l = 10)
+  ) + 
+  coord_cartesian(xlim = c(0, max(ad_recognition_data$count) * 1.1))
+
+print(q4_plot)
+
+ggsave("question4.jpeg", plot = q4_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question4.png", plot = q4_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+#question 5
+
+ack_levels <- c("Always", "Often", "Sometimes", "Rarely", "Never") 
+
+q5_data <- data %>%  
+count(ad_acknowledgment) %>% 
+complete(ad_acknowledgment = ack_levels, fill = list(n = 0)) %>% 
+mutate(ad_acknowledgment = factor(ad_acknowledgment, levels = ack_levels)) 
+
+q5_plot <- q5_data %>% 
+ggplot(aes(x = ad_acknowledgment, y = n, fill = ad_acknowledgment)) + 
+geom_bar(stat = "identity", width = 0.7) + 
+geom_text(aes(label = n), vjust = -0.5,  
+family = "Calibri", size = 4, color = "black") + 
+scale_fill_manual(values = rev(mono_blues[1:5])) + 
+labs(title = "Frequency of Realizing Videos Are Ads After Watching", 
+x = "Frequency",  
+y = "Number of Respondents", 
+caption = "n = 50") + 
+academic_theme + 
+theme(legend.position = "none") 
+
+print(q5_plot)
+
+ggsave("question5.jpeg", plot = q5_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question5.png", plot = q5_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+#question 6
+
+data <- data %>% 
+mutate(ad_misled = str_wrap(ad_misled, width = 25)) 
+
+q6_plot <- data %>% 
+count(ad_misled) %>% 
+ggplot(aes(x = reorder(ad_misled, -n), y = n, fill = ad_misled)) + 
+geom_bar(stat = "identity", width = 0.7) + 
+geom_text(aes(label = n), vjust = -0.5,  
+family = "Calibri", size = 4, color = "black") + 
+scale_fill_manual(values = mono_blues[c(1, 3, 5)]) + 
+labs( 
+title = "Feeling Misled When Realizing Content is an Ad", 
+x = "Response", 
+y = "Number of Respondents", 
+caption = "n = 50" 
+) + 
+academic_theme + 
+theme( 
+legend.position = "none", 
+axis.text.x = element_text(angle = 0, hjust = 0.5, family = "Calibri") 
+) 
+
+print(q6_plot)
+
+ggsave("question6.jpeg", plot = q6_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question6.png", plot = q6_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+#question 7
+
+q7_plot <- data %>% 
+  mutate(skip_speed = as.character(skip_speed)) %>% 
+  replace_na(list(skip_speed = "Immediately once I realize it’s an ad")) %>% 
+  count(skip_speed) %>% 
+  mutate(
+    skip_speed = factor(skip_speed, levels = c(
+      "Immediately once I realize it’s an ad", 
+      "Watch for a few seconds before skipping", 
+      "Watch the full ad"
+    )),
+    skip_speed_wrapped = str_wrap(skip_speed, width = 20)
+  ) %>% 
+  ggplot(aes(x = skip_speed_wrapped, y = n, fill = skip_speed)) + 
+  geom_bar(stat = "identity", width = 0.7) + 
+  geom_text(aes(label = n), vjust = -0.5, color = "black", size = 4, family = "Calibri") + 
+  scale_fill_manual(values = mono_blues[c(6, 3, 1)]) + 
+  labs(
+    title = "Ad Skipping Behavior", 
+    x = "Skipping Behavior", 
+    y = "Number of Respondents", 
+    caption = "n = 50"
+  ) + 
+  academic_theme + 
+  theme(
+    legend.position = "none", 
+    axis.text.x = element_text(angle = 0, hjust = 0.5)
+  )
+
+print(q7_plot)
+
+ggsave("question7.jpeg", plot = q7_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question7.png", plot = q7_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+#question 8
+
+skip_levels <- c("Always", "Often", "Sometimes", "Rarely", "Never") 
+
+q8_data <- data %>%  
+  count(skip_immediately) %>%  
+  complete(skip_immediately = skip_levels, fill = list(n = 0)) %>%  
+  mutate(skip_immediately = factor(skip_immediately, levels = skip_levels)) 
+
+q8_plot <- q8_data %>% 
+  ggplot(aes(x = skip_immediately, y = n, fill = skip_immediately)) + 
+  geom_bar(stat = "identity", width = 0.7) + 
+  geom_text(aes(label = n), vjust = -0.5,  
+            family = "Calibri", size = 4, color = "black") + 
+  scale_fill_manual(values = rev(mono_blues[1:5])) + 
+  labs(title = "Frequency of Immediately Skipping TikTok Ads", 
+       x = "Frequency",  
+       y = "Number of Respondents", 
+       caption = "n = 50") + 
+  academic_theme + 
+  theme(legend.position = "none") 
+
+q8_plot
+
+ggsave("question8.jpeg", plot = q8_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question8.png", plot = q8_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+#question 9
+
+skip_drivers_data <- data.frame(reason = character(), count = integer()) 
+
+for (response in data$skip_drivers) { 
+  if (!is.na(response)) { 
+    reasons <- split_multiple_choices(response)[[1]] 
+    for (reason in reasons) { 
+      if (reason != "") { 
+        reason <- trimws(reason) 
+        if (nrow(skip_drivers_data[skip_drivers_data$reason == reason, ]) == 0) { 
+          skip_drivers_data <- rbind(skip_drivers_data, data.frame(reason = reason, count = 1)) 
+        } else { 
+          skip_drivers_data[skip_drivers_data$reason == reason, "count"] <- 
+            skip_drivers_data[skip_drivers_data$reason == reason, "count"] + 1 
+        } 
+      } 
+    } 
+  } 
+} 
+
+q9_plot <- skip_drivers_data %>% 
+  ggplot(aes(x = count, y = reorder(reason, count), fill = reason)) + 
+  geom_bar(stat = "identity", width = 0.7) + 
+  geom_text(aes(label = count),  
+            hjust = -0.3, 
+            family = "Calibri",  
+            size = 4, 
+            color = "black") + 
+  scale_fill_manual(values = rep_len(mono_blues, length(unique(skip_drivers_data$reason)))) + 
+  labs( 
+    title = "Reasons for Skipping TikTok Ads",  
+    y = "Reason", 
+    x = "Number of Responses", 
+    caption = "Multiple responses allowed per respondent") + 
+  academic_theme + 
+  theme( 
+    legend.position = "none", 
+    axis.text.y = element_text(family = "Calibri"), 
+    plot.caption = element_text(family = "Calibri", size = 10, hjust = 0) 
+  ) + 
+  expand_limits(x = max(skip_drivers_data$count) * 1.15) 
+
+q9_plot
+
+ggsave("question9.jpeg", plot = q9_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question9.png", plot = q9_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+#question 10
+
+watch_drivers_data <- data.frame(reason = character(), count = integer())  
+
+for (response in data$watch_drivers) {  
+  if (!is.na(response)) {  
+    reasons <- split_multiple_choices(response)[[1]]  
+    for (reason in reasons) {  
+      if (reason != "") {  
+        reason <- trimws(reason)  
+        if (nrow(watch_drivers_data[watch_drivers_data$reason == reason, ]) == 0) { 
+          watch_drivers_data <- rbind(watch_drivers_data, data.frame(reason = reason, count = 1))  
+        } else {  
+          watch_drivers_data[watch_drivers_data$reason == reason, "count"] <- watch_drivers_data[watch_drivers_data$reason == reason, "count"] + 1  
+        }  
+      }  
+    }  
+  }  
+} 
+
+q10_plot <- watch_drivers_data %>%  
+  ggplot(aes(x = count, y = reorder(reason, count), fill = reason)) +  
+  geom_bar(stat = "identity", width = 0.7) +  
+  geom_text(aes(label = count), hjust = -0.3, color = "black", size = 4, family = "Calibri") +  
+  scale_fill_manual(values = rep_len(mono_blues, length(unique(watch_drivers_data$reason)))) +  
+  labs( 
+    title = "Reasons for Watching TikTok Ads Fully",  
+    y = "Reason",  
+    x = "Number of Responses", 
+    caption = "Multiple responses and own answers allowed per respondent") + 
+  academic_theme +  
+  theme(legend.position = "none") +  
+  expand_limits(x = max(watch_drivers_data$count) * 1.15)
+
+print(q10_plot)
+
+ggsave("question10.jpeg", plot = q10_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question10.png", plot = q10_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+#question 11
+
+q11_plot <- data %>%  
+  count(ad_as_regular_content) %>%  
+  mutate(ad_as_regular_content = factor(ad_as_regular_content, levels = c("Yes, frequently", "Yes, occasionally", "No"))) %>%  
+  ggplot(aes(x = ad_as_regular_content, y = n, fill = ad_as_regular_content)) +  
+  geom_bar(stat = "identity", width = 0.7) +  
+  geom_text(aes(label = n), vjust = -0.5, color = "black", size = 4, family = "Calibri") +  
+  scale_fill_manual(values = mono_blues[c(1, 3, 6)]) +  
+  labs(  
+    title = "Frequency of Watching Full Ads Because They Feel Like Regular Content",  
+    x = "Response",  
+    y = "Number of Respondents",  
+    caption = "n = 50"  
+  ) +  
+  academic_theme +  
+  theme(legend.position = "none")
+
+print(q11_plot)
+
+ggsave("question11.jpeg", plot = q11_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question11.png", plot = q11_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+#question 12
+
+ad_engagement_data <- data.frame(motivation = character(), count = integer())  
+
+for (response in data$ad_engagement) {  
+  if (!is.na(response)) {  
+    motivations <- split_multiple_choices(response)[[1]]  
+    for (motivation in motivations) {  
+      if (motivation != "") {  
+        motivation <- trimws(motivation)  
+        if (nrow(ad_engagement_data[ad_engagement_data$motivation == motivation, ]) == 0) {  
+          ad_engagement_data <- rbind(ad_engagement_data, data.frame(motivation = motivation, count = 1))  
+        } else {  
+          ad_engagement_data[ad_engagement_data$motivation == motivation, "count"] <- ad_engagement_data[ad_engagement_data$motivation == motivation, "count"] + 1  
+        }  
+      }  
+    }  
+  }  
+} 
+
+q12_plot <- ad_engagement_data %>%  
+  ggplot(aes(x = count, y = reorder(motivation, count), fill = motivation)) +  
+  geom_bar(stat = "identity", width = 0.7) +  
+  geom_text(aes(label = count), hjust = -0.3, color = "black", size = 4, family = "Calibri") +  
+  scale_fill_manual(values = rep_len(mono_blues, length(unique(ad_engagement_data$motivation)))) +  
+  labs(  
+    title = "Motivations for Engaging with TikTok Ads",  
+    y = "Motivation",  
+    x = "Number of Responses",  
+    caption = "Multiple responses allowed per person"  
+  ) +  
+  academic_theme +  
+  theme(legend.position = "none") +  
+  expand_limits(x = max(ad_engagement_data$count) * 1.15)
+
+
+print(q12_plot)
+
+ggsave("question12.jpeg", plot = q12_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question12.png", plot = q12_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+#question 13
+
+q13_plot <- data %>%  
+  count(statement) %>%  
+  mutate( 
+    statement_label = case_when(  
+      statement == "1" ~ "Strongly agree",  
+      statement == "2" ~ "Agree",  
+      statement == "3" ~ "Neutral",  
+      statement == "4" ~ "Disagree",  
+      statement == "5" ~ "Strongly disagree",  
+      TRUE ~ NA_character_ 
+    )) %>%  
+  mutate(statement_label = factor(statement_label, levels = c("Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"))) %>%  
+  ggplot(aes(x = statement_label, y = n, fill = statement_label)) +  
+  geom_bar(stat = "identity", width = 0.7) +  
+  geom_text(aes(label = n), vjust = -0.5, color = "black", size = 4, family = "Calibri") +  
+  scale_fill_manual(values = rev(mono_blues[1:5])) +  
+  labs(  
+    title = "Agreement: More Likely to Engage with Ads That Don't Look Like Ads",  
+    x = "Level of Agreement",  
+    y = "Number of Respondents",  
+    caption = "n = 50" 
+  ) +  
+  academic_theme +  
+  theme(legend.position = "none")
+
+print(q13_plot)
+
+ggsave("question13.jpeg", plot = q13_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+ggsave("question13.png", plot = q13_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
+
+just write this, change p13 into q13_plot and times new roman into calibri : 
+
+

@@ -52,7 +52,7 @@ panel.grid.major.x = element_blank(),
 panel.border = element_rect(fill = NA, color = "gray80"),  
 plot.margin = margin(10, 10, 10, 10),  
 axis.text.x = element_text(family = "Calibri")
-  ) 
+) 
 
 mono_blues <- c("#E6F0FF", "#C3D8F1", "#9EC3E6", "#7BACD9", "#5794CC", "#3480BF", "#116BB3") 
 

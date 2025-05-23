@@ -478,7 +478,3 @@ print(q13_plot)
 
 ggsave("question13.jpeg", plot = q13_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
 ggsave("question13.png", plot = q13_plot, width = 6.5, height = 4.2, units = "in", dpi = 300)
-
-just write this, change p13 into q13_plot and times new roman into calibri : 
-
-

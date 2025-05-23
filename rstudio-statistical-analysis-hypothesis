@@ -31,3 +31,58 @@ print(chi_test)
 #Fisher's exact test
 fisher_test <- fisher.test(contingency_table)  
 print(fisher_test) 
+
+#Visualisation
+
+library(extrafont) 
+library(ggplot2) 
+library(viridis) 
+library(scales) 
+
+academic_theme <- theme_minimal() +  
+theme(  
+text = element_text(family = "Calibri", size = 12),  
+plot.title = element_text(size = 14, face = "bold", hjust = 0.5), 
+plot.subtitle = element_text(size = 12, hjust = 0.5), 
+axis.title = element_text(size = 12),  
+legend.title = element_text(size = 11),  
+legend.text = element_text(size = 10),  
+panel.grid.minor = element_blank(),
+panel.grid.major.x = element_blank(), 
+panel.border = element_rect(fill = NA, color = "gray80"),  
+plot.margin = margin(10, 10, 10, 10),  
+axis.text.x = element_text(family = "Calibri")
+  ) 
+
+mono_blues <- c("#E6F0FF", "#C3D8F1", "#9EC3E6", "#7BACD9", "#5794CC", "#3480BF", "#116BB3") 
+
+plot_data <- data %>% 
+group_by(misled_negative, skip_immediately_binary) %>% 
+summarise(n = n(), .groups = "drop") %>% 
+group_by(misled_negative) %>% 
+mutate(percent = n / sum(n) * 100)
+
+plot_data$misled_negative <- factor(plot_data$misled_negative, 
+levels = c(1, 0), 
+labels = c("Misled Negatively", "Not Misled Negatively")) 
+
+plot_data$skip_immediately_binary <- factor(plot_data$skip_immediately_binary, 
+levels = c(0, 1), 
+labels = c("Does Not Skip Immediately", "Skips Immediately")) 
+
+hypothesis <- ggplot(plot_data, aes(x = misled_negative, y = percent, fill = skip_immediately_binary)) + 
+geom_col(width = 0.8, color = "white") + 
+geom_text(aes(label = paste0(round(percent, 1), "%")), 
+position = position_stack(vjust = 0.5), size = 4, family = "Calibri") + 
+scale_fill_manual( values = c("Does Not Skip Immediately" = mono_blues[2], "Skips Immediately" = mono_blues[6]), name = "Skip Behavior" ) + 
+scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+labs( 
+title = "Impact of Feeling Misled on Ad-Skipping Behavior", 
+subtitle = "Does perceived content deception influence immediate ad-skipping?", 
+x = NULL, 
+y = "Percentage", 
+caption = "Age group: Gen Z (18–25), based on self-reported behavior" ) + 
+academic_theme
+
+ggsave("hypothesis.png", plot = hypothesis, width = 6.5, height = 4, units = "in", dpi = 300)
+ggsave("hypothesis.jpeg", plot = hypothesis, width = 6.5, height = 4, units = "in", dpi = 300)

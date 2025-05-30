@@ -26,8 +26,6 @@ This repository contains all data and supplementary materials used in my master'
 - `thematic_analysis_thematic_clusters.pdf`  
   A manual thematic analysis of open-ended survey responses (Questions 14 and 15), categorising positive and negative perceptions of TikTok ads.
 
-- `mathesis.pdf`  
-  Final version of my master’s thesis, including the full methodology, results, and appendices.
 
 ## Methods Summary
 

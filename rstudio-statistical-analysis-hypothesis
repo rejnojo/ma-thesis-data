@@ -10,6 +10,8 @@ data <- read.csv("survey_data.csv")
 data <- read_csv("survey_data.csv", locale = locale(encoding = "UTF-8")) 
 data <- read_csv( "survey_data.csv", locale = locale(encoding = "Windows-1252") ) 
 
+#Creating dichotomous variables
+
 data <- data %>%  
 mutate(  
 misled_negative = ifelse(grepl("Yes, I feel misled and it negatively affects my perception of the ad.", ad_misled, fixed = TRUE), 1, 0),  
@@ -17,20 +19,26 @@ skip_immediately_binary = ifelse(grepl("Immediately once I realize it’s an ad"
 ) 
 
 #Contingency table
+
 contingency_table <- table(data$misled_negative, data$skip_immediately_binary) 
 print(addmargins(contingency_table)) 
 
 #Percentage table
+
 percent_table <- prop.table(contingency_table, margin = 1) * 100 
 print(round(percent_table, 2)) 
 
 #Chi-squared test
+
 chi_test <- chisq.test(contingency_table)  
 print(chi_test) 
 
 #Fisher's exact test
+
 fisher_test <- fisher.test(contingency_table)  
 print(fisher_test) 
+
+
 
 #Visualisation
 

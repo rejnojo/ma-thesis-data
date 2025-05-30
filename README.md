@@ -52,4 +52,4 @@ This repository contains all data and supplementary materials used in my master'
 If you use this repository in your own work, please cite it as:
 
 ```plaintext
-Rejnowska, J. (2025). Gen Z and TikTok Ads: Recognition, Skipping Behaviour, and Engagement [Master’s thesis dataset]. GitHub. https://github.com/YOUR-USERNAME/YOUR-REPO
+Rejnowska, J. (2025). Gen Z and TikTok Ads: Recognition, Skipping Behaviour, and Engagement [Master’s thesis dataset]. GitHub. https://github.com/rejnojo/ma-thesis-data

@@ -17,7 +17,7 @@ This repository contains all data and supplementary materials used in my master'
 
 ## Repository Contents
 
-- `poster_pl.pdf` / `poster_eng.pdf`
+- `poster_pl.pdf` / `poster_eng.pdf`  
   Poster used for survey distribution. Available in two versions: Polish and English.
   
 - `survey_data.xlsx` / `survey_data.csv`  
